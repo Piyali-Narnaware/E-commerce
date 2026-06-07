@@ -1,17 +1,9 @@
-# Database
-*.db
-*.sqlite
-*.sqlite3
-
-# Excel
-*.xlsx
-*.xls
-
-# Large data files (download from source)
-*.csv
-
-# Draw.io
-*.drawio
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
 
 # Python
 __pycache__/

@@ -1,33 +1,35 @@
-# E-commerce Data Analysis
+# E-commerce Platform (Musical Instruments)
 
-Exploratory analysis of the Brazilian e-commerce public dataset by Olist.
+A database design and analysis project for an e-commerce platform specializing in musical instruments.
 
-## Dataset
+## Schema
 
-This project uses the [Brazilian E-Commerce Public Dataset by Olist](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce). It contains information on 100k orders placed at Olist across multiple marketplaces in Brazil from 2016 to 2018.
+The database design includes the following entities (see `e Commerce DB.drawio` for the ER diagram):
 
-Key tables:
-- **olist_orders_dataset** – order details, timestamps, delivery status
-- **olist_customers_dataset** – customer info and geolocation
-- **olist_order_items_dataset** – items per order, prices, freight
-- **olist_order_payments_dataset** – payment method and installments
-- **olist_order_reviews_dataset** – review scores and comments
-- **olist_products_dataset** – product attributes and category
-- **olist_sellers_dataset** – seller info
-- **olist_geolocation_dataset** – zip code geolocation data
-- **product_category_name_translation** – English category translations
+- **Customers** — CustID, CustName, Address, Phone, Email, Membership, Birthday
+- **Orders** — OrderID, CustomerID, OrderDate, OrderStatus, RequireDate, ShippedDate, PayMethod, PayStatus
+- **Order Details** — Products per order with pricing, quantity, discount, tax
+- **Products** — SKU, ProductName, ProductCategory, UnitPrice
+- **Payment** — Supports coupon, debit card, and credit card
+- **Delivery** — Delivery number, company, and tracking
+- **Warehouses** — WID, Location, Name, Phone, Shelf management
+- **Suppliers** — SupplierID, Name, Address, Rating, Category/Department
+- **Transactions**, **Categories**, **Ads**, **Scoring**, **Stores**
+
+## Files
+
+| File | Description |
+|---|---|
+| `e-commerce_final code.db` | SQLite database with the full schema and data |
+| `e Commerce DB.drawio` | Entity-relationship diagram (open with [draw.io](https://app.diagrams.net)) |
+| `Product attributes copy.xlsx` | Product attribute definitions |
+| `*.csv` | Data exports for customers, orders, products, sellers, reviews, etc. |
 
 ## Requirements
 
 - Python 3.9+
 - See `requirements.txt` for dependencies
 
-## Setup
-
 ```bash
 pip install -r requirements.txt
 ```
-
-## Database
-
-The analysis uses a SQLite database (`e-commerce_final_code.db`) built from the CSV files. The entity-relationship diagram is available in `e Commerce DB.drawio`.
