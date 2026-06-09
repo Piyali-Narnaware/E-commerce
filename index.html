@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Piyali Narnaware — Portfolio Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #f5f7fb;
+      --card: #ffffff;
+      --border: #e8ecf1;
+      --text: #1e2433;
+      --text-secondary: #5a6577;
+      --accent: #2463eb;
+      --accent-light: #eef3ff;
+      --green: #10b981;
+      --orange: #f59e0b;
+      --purple: #8b5cf6;
+      --radius: 12px;
+      --shadow: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+      --shadow-hover: 0 10px 25px rgba(0,0,0,.08), 0 4px 10px rgba(0,0,0,.04);
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+
+    /* Header */
+    .header {
+      background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+      color: white;
+      padding: 48px 0 40px;
+    }
+    .header-inner { display: flex; align-items: center; gap: 32px; flex-wrap: wrap; }
+    .header-avatar {
+      width: 100px; height: 100px; border-radius: 50%;
+      background: var(--accent);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 36px; font-weight: 700; color: white; flex-shrink: 0;
+    }
+    .header h1 { font-size: 32px; font-weight: 800; letter-spacing: -.5px; }
+    .header .subtitle { font-size: 16px; color: #94a3b8; margin-top: 4px; font-weight: 400; }
+    .header-links { display: flex; gap: 16px; margin-top: 12px; }
+    .header-links a {
+      color: #94a3b8; text-decoration: none; font-size: 14px; display: flex; align-items: center; gap: 6px;
+      transition: color .2s;
+    }
+    .header-links a:hover { color: white; }
+
+    /* KPI Bar */
+    .kpi-bar {
+      background: white; border-bottom: 1px solid var(--border);
+      padding: 20px 0;
+    }
+    .kpi-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px;
+    }
+    .kpi-card {
+      text-align: center; padding: 8px 12px;
+    }
+    .kpi-value {
+      font-size: 28px; font-weight: 800; color: var(--accent); line-height: 1.2;
+    }
+    .kpi-label { font-size: 12px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: .5px; font-weight: 500; }
+    .kpi-sub { font-size: 12px; color: var(--green); font-weight: 500; margin-top: 2px; }
+
+    /* Section */
+    .section { padding: 48px 0; }
+    .section-title {
+      font-size: 22px; font-weight: 700; margin-bottom: 24px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .section-title .badge {
+      font-size: 12px; font-weight: 600; padding: 2px 10px; border-radius: 20px;
+      background: var(--accent-light); color: var(--accent);
+    }
+
+    /* About + Skills */
+    .about-card {
+      background: var(--card); border-radius: var(--radius); padding: 32px;
+      box-shadow: var(--shadow);
+    }
+    .about-card p { color: var(--text-secondary); max-width: 800px; }
+    .skills-grid {
+      display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px;
+    }
+    .skill-tag {
+      padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 500;
+      background: var(--accent-light); color: var(--accent);
+    }
+    .skill-cat {
+      font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .5px;
+      color: var(--text-secondary); width: 100%; margin-top: 12px;
+    }
+    .skill-cat:first-of-type { margin-top: 0; }
+
+    /* Experience */
+    .exp-card {
+      background: var(--card); border-radius: var(--radius); padding: 32px;
+      box-shadow: var(--shadow);
+    }
+    .exp-header { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 8px; }
+    .exp-role { font-size: 18px; font-weight: 700; }
+    .exp-company { color: var(--accent); font-weight: 500; }
+    .exp-date { font-size: 13px; color: var(--text-secondary); }
+    .exp-list { margin-top: 16px; display: grid; gap: 12px; }
+    .exp-item { display: flex; gap: 12px; align-items: flex-start; }
+    .exp-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); margin-top: 10px; flex-shrink: 0; }
+    .exp-item-text { font-size: 14px; color: var(--text-secondary); }
+    .exp-item strong { color: var(--text); font-weight: 600; }
+    .exp-subtitle { font-size: 13px; font-weight: 600; color: var(--text); margin-top: 16px; margin-bottom: 8px; }
+
+    /* Project Cards */
+    .project-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 24px;
+    }
+    .project-card {
+      background: var(--card); border-radius: var(--radius); overflow: hidden;
+      box-shadow: var(--shadow); transition: box-shadow .25s, transform .25s;
+      display: flex; flex-direction: column;
+    }
+    .project-card:hover { box-shadow: var(--shadow-hover); transform: translateY(-2px); }
+    .project-img {
+      width: 100%; height: 200px; object-fit: cover; background: #e2e8f0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; color: var(--text-secondary);
+    }
+    .project-img img { width: 100%; height: 100%; object-fit: cover; }
+    .project-body { padding: 20px 24px 24px; flex: 1; display: flex; flex-direction: column; }
+    .project-tag {
+      display: inline-block; font-size: 11px; font-weight: 600; text-transform: uppercase;
+      letter-spacing: .5px; padding: 3px 10px; border-radius: 4px; margin-bottom: 8px;
+    }
+    .project-tag.featured { background: #dbeafe; color: #1d4ed8; }
+    .project-tag.exploratory { background: #f3e8ff; color: #7c3aed; }
+    .project-title { font-size: 17px; font-weight: 700; margin-bottom: 8px; }
+    .project-desc { font-size: 13px; color: var(--text-secondary); margin-bottom: 12px; flex: 1; }
+    .project-metrics {
+      display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px;
+    }
+    .project-metric {
+      font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 6px;
+      background: #f1f5f9;
+    }
+    .project-metric.green { background: #d1fae5; color: #065f46; }
+    .project-metric.blue { background: #dbeafe; color: #1d4ed8; }
+    .project-metric.orange { background: #fef3c7; color: #92400e; }
+    .project-metric.purple { background: #f3e8ff; color: #6d28d9; }
+    .project-link {
+      font-size: 13px; font-weight: 600; color: var(--accent); text-decoration: none;
+      display: inline-flex; align-items: center; gap: 4px;
+    }
+    .project-link:hover { text-decoration: underline; }
+
+    /* Table */
+    .results-table {
+      width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 12px;
+    }
+    .results-table th, .results-table td {
+      padding: 6px 12px; text-align: left; border-bottom: 1px solid var(--border);
+    }
+    .results-table th { font-weight: 600; color: var(--text-secondary); font-size: 11px; text-transform: uppercase; letter-spacing: .5px; }
+    .results-table tr:last-child td { border-bottom: none; }
+
+    /* Footer */
+    .footer {
+      text-align: center; padding: 32px 0; font-size: 13px; color: var(--text-secondary);
+      border-top: 1px solid var(--border);
+    }
+
+    @media (max-width: 640px) {
+      .header-inner { flex-direction: column; text-align: center; }
+      .header-links { justify-content: center; }
+      .project-grid { grid-template-columns: 1fr; }
+      .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="container">
+      <div class="header-inner">
+        <div class="header-avatar">PN</div>
+        <div>
+          <h1>Piyali Narnaware</h1>
+          <div class="subtitle">Business Analytics · University of Warwick</div>
+          <div class="header-links">
+            <a href="https://github.com/Piyali-Narnaware" target="_blank">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+              github.com/Piyali-Narnaware
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- KPI Bar -->
+  <div class="kpi-bar">
+    <div class="container">
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-value">97.25%</div>
+          <div class="kpi-label">Model Recall</div>
+          <div class="kpi-sub">Loan Default Detection</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-value">25%</div>
+          <div class="kpi-label">Retention Improvement</div>
+          <div class="kpi-sub">Customer Analytics</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-value">30%</div>
+          <div class="kpi-label">Forecast Accuracy ↑</div>
+          <div class="kpi-sub">Demand Forecasting</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-value">40%</div>
+          <div class="kpi-label">Manual Effort ↓</div>
+          <div class="kpi-sub">Process Automation</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-value">2,700+</div>
+          <div class="kpi-label">Customer Registrations</div>
+          <div class="kpi-sub">Expansion Initiatives</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <!-- About -->
+    <div class="section" id="about">
+      <div class="section-title">About Me</div>
+      <div class="about-card">
+        <p>Business Analytics graduate from the <strong>University of Warwick</strong> with experience in customer analytics, forecasting, KPI reporting and commercial performance analysis across the energy and retail sectors.</p>
+        <p style="margin-top:12px">Skilled in translating data into business decisions through SQL, Power BI, Python and stakeholder-focused reporting. Passionate about using analytics to improve customer outcomes, operational performance and commercial growth.</p>
+        <div class="skills-grid">
+          <span class="skill-cat">Analytics</span>
+          <span class="skill-tag">Customer Analytics</span>
+          <span class="skill-tag">Commercial Analytics</span>
+          <span class="skill-tag">Forecasting</span>
+          <span class="skill-tag">KPI Reporting</span>
+          <span class="skill-tag">Data Visualisation</span>
+          <span class="skill-cat">Tools</span>
+          <span class="skill-tag">SQL</span>
+          <span class="skill-tag">Power BI</span>
+          <span class="skill-tag">Python</span>
+          <span class="skill-tag">Excel</span>
+          <span class="skill-tag">SAP S/4HANA</span>
+          <span class="skill-tag">R</span>
+          <span class="skill-cat">Machine Learning</span>
+          <span class="skill-tag">Predictive Modelling</span>
+          <span class="skill-tag">TensorFlow</span>
+          <span class="skill-tag">scikit-learn</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Experience -->
+    <div class="section" id="experience">
+      <div class="section-title">Professional Experience</div>
+      <div class="exp-card">
+        <div class="exp-header">
+          <div>
+            <div class="exp-role">Assistant Manager (Marketing)</div>
+            <div class="exp-company">Torrent Gas Pvt. Ltd.</div>
+          </div>
+          <div class="exp-date">Energy Sector</div>
+        </div>
+        <div class="exp-list">
+          <div class="exp-subtitle">Customer Analytics & Retention</div>
+          <div class="exp-item">
+            <div class="exp-dot"></div>
+            <div class="exp-item-text">Analysed customer behaviour and segmentation trends across domestic and commercial gas customers</div>
+          </div>
+          <div class="exp-item">
+            <div class="exp-dot"></div>
+            <div class="exp-item-text">Supported retention initiatives contributing to a <strong>25% improvement in customer retention</strong></div>
+          </div>
+          <div class="exp-item">
+            <div class="exp-dot"></div>
+            <div class="exp-item-text">Identified customer acquisition and churn patterns to support targeted marketing strategies</div>
+          </div>
+
+          <div class="exp-subtitle">Forecasting & Reporting</div>
+          <div class="exp-item">
+            <div class="exp-dot"></div>
+            <div class="exp-item-text">Built forecasting models and market performance reports using SAP and Excel</div>
+          </div>
+          <div class="exp-item">
+            <div class="exp-dot"></div>
+            <div class="exp-item-text">Improved <strong>forecasting accuracy by 30%</strong> for planning and commercial decision-making</div>
+          </div>
+          <div class="exp-item">
+            <div class="exp-dot"></div>
+            <div class="exp-item-text">Automated reporting processes reducing <strong>manual effort by 40%</strong></div>
+          </div>
+
+          <div class="exp-subtitle">Commercial Performance Analysis</div>
+          <div class="exp-item">
+            <div class="exp-dot"></div>
+            <div class="exp-item-text">Monitored KPIs across customer acquisition, sales performance and operational delivery</div>
+          </div>
+          <div class="exp-item">
+            <div class="exp-dot"></div>
+            <div class="exp-item-text">Supported expansion initiatives resulting in <strong>2,700+ PNG customer registrations</strong> and growth in CNG sales</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Featured Projects -->
+    <div class="section" id="featured">
+      <div class="section-title">Featured Analytics Projects <span class="badge">3 Projects</span></div>
+      <div class="project-grid">
+        <!-- Project 1 -->
+        <div class="project-card">
+          <div class="project-img">
+            <img src="https://raw.githubusercontent.com/Piyali-Narnaware/Loan-Default-Prediction/main/loss_curves.png" alt="Loss Curves" style="background:#f8fafc;padding:8px;object-fit:contain">
+          </div>
+          <div class="project-body">
+            <div class="project-tag featured">Predictive Analytics</div>
+            <div class="project-title">Predictive Risk Analytics for Loan Default Detection</div>
+            <div class="project-desc">Deep learning binary classifier predicting loan default risk using TensorFlow/Keras with SMOTEENN for class imbalance.</div>
+            <div class="project-metrics">
+              <span class="project-metric green">Recall: 97.25%</span>
+              <span class="project-metric blue">Accuracy: 93.1%</span>
+              <span class="project-metric orange">FNR: 2.75%</span>
+            </div>
+            <table class="results-table">
+              <tr><th>Metric</th><th>Value</th></tr>
+              <tr><td>Accuracy</td><td>93.10%</td></tr>
+              <tr><td>Precision</td><td>69.66%</td></tr>
+              <tr><td><strong>Recall</strong></td><td><strong>97.25%</strong></td></tr>
+              <tr><td>False Negative Rate</td><td>2.75%</td></tr>
+            </table>
+            <div style="margin-top:12px">
+              <a class="project-link" href="https://github.com/Piyali-Narnaware/Loan-Default-Prediction" target="_blank">View on GitHub →</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Project 2 -->
+        <div class="project-card">
+          <div class="project-img">
+            <img src="https://raw.githubusercontent.com/Piyali-Narnaware/Coop-Retail-Analysis-25-26/main/images/Executive-Overview.png" alt="Executive Overview" style="object-fit:contain;background:#f8fafc;padding:4px">
+          </div>
+          <div class="project-body">
+            <div class="project-tag featured">Business Intelligence</div>
+            <div class="project-title">Retail Performance & Customer Insights Dashboard</div>
+            <div class="project-desc">3-page Power BI dashboard analysing revenue, customer membership behaviour, category contribution and store operations.</div>
+            <div class="project-metrics">
+              <span class="project-metric blue">Power BI</span>
+              <span class="project-metric purple">DAX</span>
+              <span class="project-metric green">Interactive</span>
+            </div>
+            <div style="margin-top:12px">
+              <a class="project-link" href="https://github.com/Piyali-Narnaware/Coop-Retail-Analysis-25-26" target="_blank">View on GitHub →</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Project 3 -->
+        <div class="project-card">
+          <div class="project-img" style="background:#f1f5f9;padding:24px;display:flex;flex-direction:column;gap:8px;font-size:14px;color:#475569;align-items:center;justify-content:center">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#2463eb" stroke-width="1.5"><path d="M4 7V4h16v3M4 7v9h16V7M4 7h16"/><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M8 12h8M8 8h8"/></svg>
+            <span>Entity-Relationship Diagram</span>
+            <span style="font-size:11px;color:#94a3b8">12+ entities · Normalized schema</span>
+          </div>
+          <div class="project-body">
+            <div class="project-tag featured">Data Engineering</div>
+            <div class="project-title">E-commerce Analytics Data Platform</div>
+            <div class="project-desc">Normalized relational database schema (SQLite) for a musical instrument e-commerce platform with analytical queries.</div>
+            <div class="project-metrics">
+              <span class="project-metric blue">SQLite</span>
+              <span class="project-metric orange">Python</span>
+              <span class="project-metric purple">draw.io</span>
+            </div>
+            <div style="margin-top:12px">
+              <a class="project-link" href="https://github.com/Piyali-Narnaware/E-commerce" target="_blank">View on GitHub →</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Academic & Exploratory Projects -->
+    <div class="section" id="academic">
+      <div class="section-title">Academic & Exploratory Projects <span class="badge">3 Projects</span></div>
+      <div class="project-grid">
+        <!-- Project 4 -->
+        <div class="project-card">
+          <div class="project-img" style="background:#f3e8ff;display:flex;align-items:center;justify-content:center;color:#7c3aed;font-size:14px;font-weight:500">
+            AI Recommendation Engine
+          </div>
+          <div class="project-body">
+            <div class="project-tag exploratory">Machine Learning</div>
+            <div class="project-title">AI Skincare Recommendation System</div>
+            <div class="project-desc">Random Forest regression + rule-based engine predicting 5 skin traits from a 13-question quiz. Scores 151 products and builds personalized AM/PM routines with conflict detection.</div>
+            <div class="project-metrics">
+              <span class="project-metric purple">scikit-learn</span>
+              <span class="project-metric green">Streamlit</span>
+              <span class="project-metric blue">Python</span>
+            </div>
+            <div style="margin-top:auto">
+              <a class="project-link" href="https://github.com/Piyali-Narnaware/AI-based-Skincare-routine-recommendation" target="_blank">View on GitHub →</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Project 5 -->
+        <div class="project-card">
+          <div class="project-img">
+            <img src="https://raw.githubusercontent.com/Piyali-Narnaware/London-Low-Income-Household-Analysis/main/yearly_distribution_plot.png" alt="Yearly Distribution" style="object-fit:contain;background:#f8fafc;padding:4px">
+          </div>
+          <div class="project-body">
+            <div class="project-tag exploratory">Statistical Analysis</div>
+            <div class="project-title">London Poverty Analysis</div>
+            <div class="project-desc">Statistical analysis of children in low-income households across London boroughs (2014-2021) using Welch t-test and data visualisation in R.</div>
+            <div class="project-metrics">
+              <span class="project-metric orange">R</span>
+              <span class="project-metric blue">tidyverse</span>
+              <span class="project-metric purple">Hypothesis Testing</span>
+            </div>
+            <div style="margin-top:auto">
+              <a class="project-link" href="https://github.com/Piyali-Narnaware/London-Low-Income-Household-Analysis" target="_blank">View on GitHub →</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Project 6 -->
+        <div class="project-card">
+          <div class="project-img">
+            <img src="https://raw.githubusercontent.com/Piyali-Narnaware/London-Bike-Hire-Demand-Analysis-/main/covid_period_comparison.png" alt="COVID Period Comparison" style="object-fit:contain;background:#f8fafc;padding:4px">
+          </div>
+          <div class="project-body">
+            <div class="project-tag exploratory">Time-Series Analysis</div>
+            <div class="project-title">London Bike Hire Analysis</div>
+            <div class="project-desc">Behavioural demand analysis of London bike hires during COVID-19 using regression, ANOVA, and time-series visualisation in R.</div>
+            <div class="project-metrics">
+              <span class="project-metric orange">R</span>
+              <span class="project-metric blue">Regression</span>
+              <span class="project-metric green">ANOVA</span>
+            </div>
+            <div style="margin-top:auto">
+              <a class="project-link" href="https://github.com/Piyali-Narnaware/London-Bike-Hire-Demand-Analysis-" target="_blank">View on GitHub →</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <div class="container">
+      Piyali Narnaware · <a href="https://github.com/Piyali-Narnaware" target="_blank" style="color:var(--accent);text-decoration:none">GitHub</a>
+    </div>
+  </div>
+</body>
+</html>
