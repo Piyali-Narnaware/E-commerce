@@ -1,7 +1,5 @@
 # Proposed A/B Test Design: Checkout Delivery Messaging
 
-**Status: Proposed design only — not run**
-
 ## Question
 
 Would showing a clearer delivery-date range at checkout increase the proportion of eligible checkout sessions that become completed orders?
@@ -18,5 +16,3 @@ Would showing a clearer delivery-date range at checkout increase the proportion 
 ## Data required
 
 The Olist order dataset contains order records but does not contain checkout sessions, exposure records or experiment assignments. It cannot measure conversion or estimate a treatment effect for this test. A live evaluation would require session-level tracking linked to randomized group assignment, followed by outcome data from order and delivery systems.
-
-No experiment was run and no results are claimed.
