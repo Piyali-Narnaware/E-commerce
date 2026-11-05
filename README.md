@@ -56,6 +56,7 @@ erDiagram
 - **SQL Views for BI** — Star-schema views (`v_FactOrders`, `v_DimCustomer`, `v_DimProduct`, `v_DimSeller`, `v_DimCalendar`, `v_CalcDeliveryKPIs`) optimised for Power BI import
 - **DAX Measures** — Total Revenue, Average Order Value (AOV), On-Time Delivery %, Revenue MoM %, Review Score Average
 - **Power BI Dashboard** — 4 pages: Executive Summary, Sales & Products, Customers & Reviews, Delivery & Operations
+- **Proposed A/B Test Design** — Checkout delivery-messaging hypothesis, randomized assignment, conversion and guardrail metrics, and required session-level tracking, documented in [experiment_design.md](experiment_design.md)
 - **Colour Palette** — Custom brand theme: `#1E3A5F`, `#F5A623`, `#7ED321`, `#D0021B`
 
 ---
@@ -83,6 +84,7 @@ Source: [Brazilian E-Commerce Public Olist Dataset](https://www.kaggle.com/datas
 ├── e-commerce_final code.db    # SQLite database (populated)
 ├── powerbi_queries.sql         # Star-schema SQL views for Power BI
 ├── POWERBI_DASHBOARD.md        # Dashboard build guide with DAX measures
+├── experiment_design.md        # Proposed checkout A/B test design
 ├── e Commerce DB.drawio        # Editable ER diagram (draw.io)
 ├── requirements.txt
 └── data/                       # Raw Olist CSVs
