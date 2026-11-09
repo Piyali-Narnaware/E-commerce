@@ -75,8 +75,10 @@ def analyse(csv_path: Path, output_path: Path) -> pd.DataFrame:
     data = data[data["group"].isin(["control", "treatment"])]
     data = data[data["landing_page"].isin(["old_page", "new_page"])]
 
+    valid_rows = len(data)
     # The assignment unit is the user. Keep the earliest recorded row per user.
     data = data.sort_values("timestamp").drop_duplicates("user_id", keep="first")
+    duplicate_user_rows_removed = valid_rows - len(data)
     if set(data["group"].unique()) != {"control", "treatment"}:
         raise ValueError("Both control and treatment groups must remain after cleaning.")
 
@@ -119,7 +121,8 @@ def analyse(csv_path: Path, output_path: Path) -> pd.DataFrame:
                 "unique_users_analysed": treatment_total + control_total,
                 "control_users": control_total,
                 "treatment_users": treatment_total,
-                "duplicate_user_rows_removed": raw_rows - len(data),
+                "invalid_rows_removed": raw_rows - valid_rows,
+                "duplicate_user_rows_removed": duplicate_user_rows_removed,
                 "assignment_exposure_mismatch_rate": mismatch_rate,
                 "control_conversions": control_successes,
                 "treatment_conversions": treatment_successes,
