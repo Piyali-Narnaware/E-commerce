@@ -126,3 +126,12 @@ To build the Power BI dashboard, follow the guide in [`POWERBI_DASHBOARD.md`](PO
 - **Star-schema SQL views** reducing Power BI query complexity
 - **DAX measures** enabling real-time KPI tracking
 - Dashboard tracks **Revenue, AOV, On-Time Delivery %, Review Scores** across geographic and temporal dimensions
+
+
+## Experiment analysis
+
+The project now includes a reproducible analysis of public landing-page experiment records. It checks assignment quality, estimates conversion lift, tests statistical significance and reports the confidence interval. It is a secondary analysis, not a test run by this project author. The dataset has no margin or customer-value guardrails, and it is not a pricing experiment.
+
+- [Analysis instructions and limitations](ab_testing/README.md)
+- [Python analysis script](ab_testing/analyze_landing_page_test.py)
+- [Separate checkout delivery-message test plan](experiment_design.md)
