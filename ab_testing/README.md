@@ -1,24 +1,50 @@
-# A/B Test Analysis
+# Landing-page A/B test analysis
 
-This folder analyses the public landing-page experiment dataset linked below. It demonstrates experiment data checks, conversion analysis, treatment-effect estimation, significance testing and a decision against a conversion rollout when evidence does not support improvement.
+## Scope
 
-This is a secondary analysis of published experiment records. It was not an experiment implemented or collected by this project author, and it is not a pricing test.
+This module analyses a published landing-page experiment using user-level assignment and conversion records. It is a secondary analysis of an experiment conducted by others. It is not a test implemented by this project, and it is separate from the Olist e-commerce order dataset.
 
-## Run
+## Result
 
-1. Download `ab_data.csv` from the [Kaggle A/B testing dataset](https://www.kaggle.com/datasets/zhangluyuan/ab-testing)
-2. Place the file at `data/ab_data.csv`
-3. Install project dependencies with `pip install -r requirements.txt`
-4. Run `python ab_testing/analyze_landing_page_test.py`
+| Measure | Control: old page | Treatment: new page |
+|---|---:|---:|
+| Unique users | 145,274 | 145,310 |
+| Conversions | 17,489 | 17,264 |
+| Conversion rate | 12.04% | 11.88% |
 
-The script checks required fields, removes repeat user records, reports assignment-to-page mismatches, checks the 50/50 sample split and compares conversion rates by assigned group. It reports absolute and relative lift, a two-sided two-proportion test and a 95% Newcombe-Wilson confidence interval. Results are written to `outputs/ab_test_summary.csv`.
+The estimated treatment effect was **−0.158 percentage points** in absolute conversion, or **−1.31% relative to control**. The two-sided two-proportion test returned **p = 0.1899**. The 95% Newcombe-Wilson confidence interval for the absolute difference was **−0.394 to +0.078 percentage points**.
 
-## Interpretation
+The 50:50 sample-ratio check returned **p = 0.9482**, with no evidence of an assignment imbalance. At the 5% significance level, the results do not establish a conversion difference. The confidence interval includes zero, so this is not evidence that the pages are equivalent. Conversion is the only available outcome; the dataset does not support conclusions about revenue, margin, cancellations or customer value.
 
-The primary comparison is intention-to-treat by assigned group. Assignment/page mismatches are reported as a data-quality and implementation issue; the script does not silently remove these users from the primary estimate.
+## Analysis method
 
-The dataset contains conversion outcomes only. It does not include booking value, revenue, margin, cancellations or customer-value guardrails. The analysis therefore cannot establish commercial profitability or the effect of pricing changes. The dataset page lists its licence as unknown; obtain and review its terms before redistribution. The raw data is not included in this repository.
+- Validated required fields and accepted values, parsed timestamps and removed invalid records
+- Kept the earliest record per user so each user contributed one outcome
+- Measured assignment-to-page mismatches and retained those users in the primary comparison by assigned group
+- Checked the treatment-to-control allocation against the expected 50:50 split
+- Calculated control and treatment conversion rates, absolute and relative lift, and a two-sided pooled two-proportion z-test
+- Calculated a 95% Newcombe-Wilson confidence interval for the difference in conversion rates
+
+The primary estimate follows an **intention-to-treat** approach: users are analysed by assigned group, even when the recorded page differs. Assignment-to-page mismatches are reported as a data-quality issue rather than excluded from the primary estimate.
+
+## Reproduce
+
+The raw dataset is not included in this repository. Download the public dataset from [Kaggle](https://www.kaggle.com/datasets/zhangluyuan/ab-testing) and place `ab_data.csv` at `data/ab_data.csv`. The dataset page lists its licence as unknown, so review its terms before redistributing the file.
+
+From the repository root, install the dependencies and run:
+
+```bash
+pip install -r requirements.txt
+python ab_testing/analyze_landing_page_test.py --data data/ab_data.csv --output ab_testing/outputs/ab_test_summary.csv
+```
+
+The script writes a one-row CSV with group sizes, conversion counts and rates, lift, test statistics, confidence limits, sample-ratio results and data-quality checks.
+
+## Limits
+
+This analysis estimates conversion difference for the published landing-page experiment only. It does not establish that the treatment caused a change in revenue or business value, and it does not evaluate pricing. The project author did not assign users, implement the pages or collect the experiment data.
 
 ## Source
 
 - [Kaggle: A/B testing dataset by Luyuan Zhang](https://www.kaggle.com/datasets/zhangluyuan/ab-testing)
+- [Analysis script](analyze_landing_page_test.py)
