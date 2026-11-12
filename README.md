@@ -1,107 +1,45 @@
-# E-Commerce Database & Analytics Platform
+# E-commerce Database and Reporting
 
-![Python](https://img.shields.io/badge/python-3.8%2B-blue)
-![SQLite](https://img.shields.io/badge/sqlite-3-green)
-![Power BI](https://img.shields.io/badge/Power%20BI-dashboard-yellow)
+A SQL and Power BI analytics project built with the Brazilian Olist public e-commerce dataset. It structures **99,441 orders** from nine source tables into a relational SQLite database, prepares reusable reporting views and presents performance measures in a four-page dashboard.
 
-A fully normalised relational database and business intelligence solution for a musical-instrument e-commerce platform. Built on 100k+ real Brazilian orders (Olist dataset), this project delivers a star-schema data model, analytical SQL views, and a multi-page Power BI dashboard for end-to-end retail performance monitoring.
+## Project workflow
 
----
+`CSV source tables → SQLite relational model → SQL reporting views → Power BI dashboard`
 
-## Architecture
+## Data model and reporting
 
-```
-┌──────────────────────┐     ┌──────────────────────┐     ┌──────────────────┐
-│  Raw CSV Data        │────▶│  Normalised SQLite    │────▶│  Power BI        │
-│  (9 Olist tables)   │     │  Database             │     │  Dashboard       │
-│                      │     │  (12+ entities)      │     │  (4 pages)       │
-└──────────────────────┘     └──────────┬───────────┘     └──────────────────┘
-                                         │
-                                         ▼
-                                ┌──────────────────┐
-                                │  Star-Schema     │
-                                │  SQL Views       │
-                                │  - FactOrders    │
-                                │  - DimCustomer   │
-                                │  - DimProduct    │
-                                │  - DimSeller     │
-                                │  - DimCalendar   │
-                                │  - CalcDelivery  │
-                                └──────────────────┘
-```
+- Integrated nine Olist source tables into a normalised SQLite model with 12+ related entities and foreign-key relationships
+- Created six SQL views for order, customer, product, seller, calendar and delivery analysis
+- Built a four-page Power BI dashboard covering executive performance, sales and products, customers and reviews, and delivery and operations
+- Added five DAX measures for total revenue, average order value, on-time delivery, month-over-month revenue and average review score
 
-### ER Diagram (Star Schema)
+## Source data
 
-```mermaid
-erDiagram
-    CUSTOMERS ||--o{ ORDERS : places
-    ORDERS ||--|{ ORDER_DETAILS : contains
-    PRODUCTS ||--o{ ORDER_DETAILS : includes
-    PRODUCTS }o--|| CATEGORY : categorised
-    SELLERS ||--o{ PRODUCTS : supplies
-    WAREHOUSES ||--o{ PRODUCTS : stocks
-    SUPPLIER ||--o{ PRODUCTS : manufactures
-    ORDERS ||--|| DELIVERY : has
-    DELIVERY ||--|| SCORING : evaluated
-    ORDERS }o--|| PAYMENT : paid_by
-    GEOLOCATION ||--o{ CUSTOMERS : located
-    GEOLOCATION ||--o{ SELLERS : located
-```
+The project uses the [Brazilian E-Commerce Public Dataset by Olist](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce), covering orders placed from 2016 to 2018.
 
----
+| Source table | Approximate rows | Use |
+|---|---:|---|
+| Customers | 99,000 | Customer and location analysis |
+| Orders | 99,441 | Order dates and status |
+| Order items | 113,000 | Products, sellers and item values |
+| Payments | 103,000 | Payment methods and instalments |
+| Reviews | 99,000 | Review scores and comments |
+| Products | 33,000 | Product attributes and categories |
+| Sellers | 3,000 | Seller details and location |
+| Geolocation | 1,000,000 | ZIP-code coordinates |
+| Category translation | 71 | English category labels |
 
-## Key Features
+## Experiment analysis
 
-- **Normalised Schema** — 12+ entities in 3NF with foreign key constraints
-- **SQL Views for BI** — Star-schema views (`v_FactOrders`, `v_DimCustomer`, `v_DimProduct`, `v_DimSeller`, `v_DimCalendar`, `v_CalcDeliveryKPIs`) optimised for Power BI import
-- **DAX Measures** — Total Revenue, Average Order Value (AOV), On-Time Delivery %, Revenue MoM %, Review Score Average
-- **Power BI Dashboard** — 4 pages: Executive Summary, Sales & Products, Customers & Reviews, Delivery & Operations
-- **Proposed A/B Test Design** — Checkout delivery-messaging hypothesis, randomized assignment, conversion and guardrail metrics, and required session-level tracking, documented in [experiment_design.md](experiment_design.md)
-- **Colour Palette** — Custom brand theme: `#1E3A5F`, `#F5A623`, `#7ED321`, `#D0021B`
+The repository also contains a separate analysis of public landing-page experiment data. It checks assignment balance, calculates conversion lift, tests statistical significance and reports a confidence interval. This is a secondary dataset analysis, not an experiment conducted by the project author. The data does not include margin or customer-value guardrails, and the analysis is not a pricing experiment.
 
----
+- [Analysis and limitations](ab_testing/README.md)
+- [Analysis script](ab_testing/analyze_landing_page_test.py)
+- [Separate proposed checkout test design](experiment_design.md)
 
-## Dataset
+## Reproduce
 
-Source: [Brazilian E-Commerce Public Olist Dataset](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce) (100k+ orders, 2016–2018)
-
-| Table | Rows | Description |
-|-------|------|-------------|
-| `olist_customers_dataset` | 99k | Customer demographics & geolocation |
-| `olist_orders_dataset` | 99k | Order timestamps & status |
-| `olist_order_items_dataset` | 113k | Product-level order lines |
-| `olist_order_payments_dataset` | 103k | Payment method & instalments |
-| `olist_order_reviews_dataset` | 99k | Customer review scores & comments |
-| `olist_products_dataset` | 33k | Product attributes (weight, dimensions, category) |
-| `olist_sellers_dataset` | 3k | Seller details & geolocation |
-| `olist_geolocation_dataset` | 1M | ZIP code lat/lon coordinates |
-
----
-
-## Project Structure
-
-```
-├── e-commerce_final code.db    # SQLite database (populated)
-├── powerbi_queries.sql         # Star-schema SQL views for Power BI
-├── POWERBI_DASHBOARD.md        # Dashboard build guide with DAX measures
-├── experiment_design.md        # Proposed checkout A/B test design
-├── e Commerce DB.drawio        # Editable ER diagram (draw.io)
-├── requirements.txt
-└── data/                       # Raw Olist CSVs
-    ├── olist_customers_dataset.csv
-    ├── olist_orders_dataset.csv
-    ├── olist_order_items_dataset.csv
-    ├── olist_order_payments_dataset.csv
-    ├── olist_order_reviews_dataset.csv
-    ├── olist_products_dataset.csv
-    ├── olist_sellers_dataset.csv
-    ├── olist_geolocation_dataset.csv
-    └── product_category_name_translation.csv
-```
-
----
-
-## Installation
+Clone the repository and install the Python dependencies:
 
 ```bash
 git clone https://github.com/Piyali-Narnaware/E-commerce.git
@@ -109,29 +47,14 @@ cd E-commerce
 pip install -r requirements.txt
 ```
 
-To explore the database:
+Open `e-commerce_final code.db` with SQLite to inspect the database. Use `powerbi_queries.sql` to review the reporting views and `POWERBI_DASHBOARD.md` for the dashboard build notes and DAX measures.
 
-```bash
-sqlite3 e-commerce_final_code.db
-.tables
-```
+## Repository contents
 
-To build the Power BI dashboard, follow the guide in [`POWERBI_DASHBOARD.md`](POWERBI_DASHBOARD.md).
-
----
-
-## Key Results
-
-- **12+ normalised entities** enforcing referential integrity
-- **Star-schema SQL views** reducing Power BI query complexity
-- **DAX measures** enabling real-time KPI tracking
-- Dashboard tracks **Revenue, AOV, On-Time Delivery %, Review Scores** across geographic and temporal dimensions
-
-
-## Experiment analysis
-
-The project now includes a reproducible analysis of public landing-page experiment records. It checks assignment quality, estimates conversion lift, tests statistical significance and reports the confidence interval. It is a secondary analysis, not a test run by this project author. The dataset has no margin or customer-value guardrails, and it is not a pricing experiment.
-
-- [Analysis instructions and limitations](ab_testing/README.md)
-- [Python analysis script](ab_testing/analyze_landing_page_test.py)
-- [Separate checkout delivery-message test plan](experiment_design.md)
+- `e-commerce_final code.db`: populated SQLite database
+- `powerbi_queries.sql`: six reporting views
+- `POWERBI_DASHBOARD.md`: dashboard build notes and DAX definitions
+- `e Commerce DB.drawio`: editable database diagram
+- `ab_testing/`: separate public experiment-data analysis
+- `experiment_design.md`: proposed checkout-message experiment
+- Olist CSV files: source data
