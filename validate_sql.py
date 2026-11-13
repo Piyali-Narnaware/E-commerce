@@ -6,20 +6,38 @@ root = Path(__file__).resolve().parent
 db = root / "e-commerce_final code.db"
 sql = (root / "powerbi_queries.sql").read_text(encoding="utf-8")
 conn = sqlite3.connect(":memory:")
-source = sqlite3.connect(str(db))
-tables = source.execute("SELECT name FROM sqlite_master WHERE type='table'").fetchall()
-print("Repository database tables:", [x[0] for x in tables])
-required = {"olist_orders_dataset", "olist_order_items_dataset", "olist_order_payments_dataset",
-            "olist_order_reviews_dataset", "olist_customers_dataset", "olist_products_dataset",
-            "olist_sellers_dataset", "product_category_name_translation"}
-available = {x[0] for x in tables}
-if not required.issubset(available):
-    print("The committed SQLite database is not the complete Olist reporting database.")
-    print("Missing:", sorted(required - available))
-    print("Use the full source CSV files to construct a complete SQLite database before testing views.")
-    raise SystemExit(2)
-source.backup(conn)
-source.close()
+import csv
+required = [
+    "olist_orders_dataset", "olist_order_items_dataset", "olist_order_payments_dataset",
+    "olist_order_reviews_dataset", "olist_customers_dataset", "olist_products_dataset",
+    "olist_sellers_dataset", "product_category_name_translation"
+]
+# The committed .db is a separate schema. Load Olist CSVs into a temporary
+# in-memory SQLite database without altering the existing database file.
+for table in required:
+    csv_path = root / (table + ".csv")
+    if not csv_path.exists():
+        raise SystemExit(f"Missing source CSV: {csv_path.name}")
+    with csv_path.open(newline="", encoding="utf-8-sig") as f:
+        reader = csv.reader(f)
+        columns = next(reader)
+        quoted = [chr(34) + col.replace(chr(34), chr(34) * 2) + chr(34) for col in columns]
+        conn.execute(f'CREATE TABLE "{table}" (' + ", ".join(c + " TEXT" for c in quoted) + ")")
+        placeholders = ", ".join("?" for _ in columns)
+        insert = f'INSERT INTO "{table}" VALUES ({placeholders})'
+        batch = []
+        count = 0
+        for row in reader:
+            batch.append([value if value != "" else None for value in row])
+            if len(batch) >= 5000:
+                conn.executemany(insert, batch)
+                count += len(batch)
+                batch.clear()
+        if batch:
+            conn.executemany(insert, batch)
+            count += len(batch)
+        print(f"Loaded {table}: {count} rows")
+conn.commit()
 conn.executescript(sql)
 checks = [
     ("Order summary one row per order",
