@@ -1,34 +1,48 @@
-# E-commerce Database and SQL Reporting
+# E-commerce Reporting | SQLite, SQL & Data Quality
 
-A data-management and SQL reporting project using the Brazilian Olist public e-commerce dataset. The project structures 99,441 orders from nine source tables in SQLite and prepares reusable reporting views.
+**Question:** How can raw marketplace tables be turned into reliable, reusable reporting datasets?
 
-## Data model and reporting
+This project uses the [Olist Brazilian e-commerce dataset](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce) to examine orders, payments, products, customers and delivery performance. The emphasis is on SQL modelling, reconciliation and making metrics usable for reporting.
 
-- Integrated nine Olist source tables into a normalised SQLite database with 12+ related entities and foreign-key relationships
-- Created six SQL views for order, customer, product, seller, calendar and delivery analysis
-- Documented a proposed Power BI dashboard layout and candidate DAX measures in [POWERBI_DASHBOARD.md](POWERBI_DASHBOARD.md); this is a design guide, not a completed dashboard
+## Work completed
 
-## Source data
+- Explored the relationships between the source tables and documented the database structure in [the schema diagram](e%20Commerce%20DB.drawio)
+- Built reporting views in [`powerbi_queries.sql`](powerbi_queries.sql) for order, customer, product, seller, calendar and delivery analysis
+- Added [automated SQL checks](validate_sql.py) covering row counts, uniqueness and reconciliation of payment and product-revenue totals
+- Documented proposed Power BI measures and pages in [`POWERBI_DASHBOARD.md`](POWERBI_DASHBOARD.md)
 
-The project uses the [Brazilian E-Commerce Public Dataset by Olist](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce), covering orders placed from 2016 to 2018.
+**Validation:** The automated reporting-view checks passed against the Olist CSVs loaded into SQLite. That establishes consistency for the checked queries; it does not validate every possible business metric.
 
-## Separate experiment analysis
+## Reporting questions
 
-The repository also includes a secondary analysis of a published landing-page experiment dataset. It is separate from the Olist data and was not implemented or collected by the project author. The analysis deduplicates user records, compares conversion by assigned group, checks assignment balance, and reports a two-proportion test and confidence interval. The dataset contains no revenue, margin, cancellation or customer-value outcomes.
+| Question | Evidence to inspect | Why it matters |
+|---|---|---|
+| How does order volume change over time? | Order and calendar views | Understand trading patterns |
+| How much revenue is associated with products and sellers? | Product and seller views | Identify areas for deeper performance analysis |
+| Where are delivery delays concentrated? | Delivery view | Investigate fulfilment performance |
+| Do payment totals reconcile? | Payment validation checks | Increase confidence in reported figures |
 
-- [Methods, results and limitations](ab_testing/README.md)
-- [Analysis script](ab_testing/analyze_landing_page_test.py)
-- [Proposed checkout-message test design](experiment_design.md)
+These are analytical questions, not claims that commercial improvements were implemented.
 
-## Reproduce
+## Reproduce the reporting layer
 
-Install dependencies with `pip install -r requirements.txt`. Open `e-commerce_final code.db` with SQLite to inspect the database and use `powerbi_queries.sql` to review the reporting views.
+```bash
+pip install -r requirements.txt
+python validate_sql.py
+```
 
-## Repository contents
+See [the validation workflow](.github/workflows/validate-sql.yml) for the automated check.
 
-- `e-commerce_final code.db`: SQLite database
-- `powerbi_queries.sql`: six SQL reporting views
-- `POWERBI_DASHBOARD.md`: proposed Power BI dashboard design guide, not an implemented dashboard
-- `e Commerce DB.drawio`: database diagram
-- `ab_testing/`: separate public experiment-data analysis
-- Olist CSV files: source data
+**Two database contexts:** The committed `e-commerce_final code.db` is an earlier database with a different schema. The Olist reporting SQL is validated by loading the source CSVs into its own SQLite schema. Do **not** assume that `powerbi_queries.sql` runs unchanged against the committed database file.
+
+## Power BI status
+
+[`POWERBI_DASHBOARD.md`](POWERBI_DASHBOARD.md) is a **design specification** with suggested measures, not proof of a completed or tested Power BI dashboard. A final report screenshot and refreshed PBIX would be needed to demonstrate the visual reporting layer.
+
+## Separate experiment exercise
+
+The [A/B testing analysis](ab_testing/README.md) uses a separate published landing-page dataset. It was not run on Olist customers, and the experiment was not designed or conducted by the project author. Its results should not be presented as a live e-commerce conversion improvement.
+
+## Limitations
+
+Historical public data cannot establish current trading performance. SQL reconciliation checks support data integrity but do not establish causality, financial impact or production deployment.
