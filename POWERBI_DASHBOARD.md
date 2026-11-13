@@ -1,193 +1,142 @@
-# Power BI Dashboard Guide
+# Power BI reporting guide
 
-## Overview
+This is a design and implementation guide, not a claim that a Power BI dashboard has already been built. It uses the public Brazilian Olist e-commerce dataset, not a musical-instrument-only store.
 
-This guide walks you through building a Power BI dashboard for the musical-instrument e-commerce platform using the SQLite database and CSV files in this repository.
+## 1. Prepare the reporting views
 
----
+Open the full Olist SQLite database (or import the nine Olist CSVs into a new SQLite database) and run `powerbi_queries.sql`. The repository's existing `e-commerce_final code.db` is small, so check that it contains all source rows before using it for a complete dashboard.
 
-## 1. Data Import
+The script creates seven views:
 
-### Option A — Connect to SQLite DB (Recommended)
+| View | Grain | Purpose |
+| --- | --- | --- |
+| `v_FactOrders` | One order item | Product, seller, unit and item-level revenue analysis |
+| `v_FactOrderSummary` | One order | Orders, customer spend, payments, reviews and delivery |
+| `v_DimCustomer` | One order-specific customer ID | Customer location and unique-customer ID |
+| `v_DimProduct` | One product | Product category and attributes |
+| `v_DimSeller` | One seller | Seller location |
+| `v_DimCalendar` | One date | Calendar filters |
+| `v_CalcDeliveryKPIs` | One delivered order | Optional delivery detail; the order summary already includes delivery KPIs |
 
-1. Open **Power BI Desktop**
-2. **Get Data** → **ODBC** or **Other** → **SQLite** (or install the [SQLite ODBC driver](http://www.ch-werner.de/sqliteodbc/))
-3. Select `e-commerce_final code.db`
-4. Import the tables:
-   - `olist_orders_dataset`
-   - `olist_order_items_dataset`
-   - `olist_order_payments_dataset`
-   - `olist_order_reviews_dataset`
-   - `olist_customers_dataset`
-   - `olist_products_dataset`
-   - `olist_sellers_dataset`
-   - `product_category_name_translation`
+`v_FactOrders` contains item prices and freight, **not** repeated order payment values or review scores. `v_FactOrderSummary` aggregates those other sources before joining to orders. Never sum an order-level value after joining it to multiple order items.
 
-### Option B — Import CSVs Directly
+## 2. Power BI relationships
 
-**Get Data** → **Text/CSV** and select each `.csv` file.
+Import the six main views, excluding `v_CalcDeliveryKPIs` unless needed for separate detail.
 
-### Option C — Use Prepared SQL Views
+Create single-direction, one-to-many relationships from the dimension to the fact:
 
-Run `powerbi_queries.sql` against the SQLite DB first, then import:
-- `v_FactOrders`
-- `v_DimCustomer`
-- `v_DimProduct`
-- `v_DimSeller`
-- `v_DimCalendar`
-- `v_CalcDeliveryKPIs`
+- `v_DimCalendar[date]` → `v_FactOrders[order_date]`
+- `v_DimCalendar[date]` → `v_FactOrderSummary[order_date]`
+- `v_DimCustomer[customer_id]` → `v_FactOrders[customer_id]`
+- `v_DimCustomer[customer_id]` → `v_FactOrderSummary[customer_id]`
+- `v_DimProduct[product_id]` → `v_FactOrders[product_id]`
+- `v_DimSeller[seller_id]` → `v_FactOrders[seller_id]`
 
----
+Set the calendar date field to **Date** and mark `v_DimCalendar` as a date table. Avoid connecting the two fact tables directly. With two fact tables sharing dimensions, test filter propagation and ambiguous relationship paths in the model before publishing.
 
-## 2. Data Model (Star Schema)
+The order-summary measures below respond to calendar and customer filters. Product and seller slicers do **not** automatically filter order-summary measures. If you need order-level measures by product/seller, use a distinct-order bridge or explicit DAX filter logic and validate totals.
 
-Build this relationship model in the **Model** view:
+## 3. Suggested DAX measures
 
-```
-DimCalendar ───── FactOrders (order_date)
-DimCustomer ───── FactOrders (customer_id)
-DimProduct  ───── FactOrders (product_id)
-DimSeller   ───── FactOrders (seller_id)
-```
-
-| Table | Join to | Column |
-|---|---|---|
-| `v_DimCalendar` | `v_FactOrders` | `date` → `order_date` |
-| `v_DimCustomer` | `v_FactOrders` | `customer_id` |
-| `v_DimProduct` | `v_FactOrders` | `product_id` |
-| `v_DimSeller` | `v_FactOrders` | `seller_id` |
-
----
-
-## 3. DAX Measures
-
-Create these **measures** in the `v_FactOrders` table:
+Create these measures in Power BI. The SQL views use `DATE(...)` so `order_date` can relate to the calendar date.
 
 ```dax
--- Revenue
-Total Revenue = SUM(v_FactOrders[total_order_value])
-
--- Orders Count
-Total Orders = DISTINCTCOUNT(v_FactOrders[order_id])
-
--- Average Order Value (AOV)
-Avg Order Value = DIVIDE([Total Revenue], [Total Orders])
-
--- Freight Cost
-Total Freight = SUM(v_FactOrders[freight_value])
-
--- Freight % of Revenue
-Freight % of Revenue = DIVIDE([Total Freight], [Total Revenue])
-
--- Customers
-Total Customers = DISTINCTCOUNT(v_FactOrders[customer_id])
-
--- Products Sold
-Products Sold = SUM(v_FactOrders[price])
-
--- Units Sold
+-- Item-grain measures
+Product Revenue = SUM(v_FactOrders[price])
+Freight Revenue = SUM(v_FactOrders[freight_value])
+Item Total Including Freight =
+    SUM(v_FactOrders[item_total_including_freight])
 Units Sold = COUNTROWS(v_FactOrders)
+Orders With Items = DISTINCTCOUNT(v_FactOrders[order_id])
 
--- Review Score Avg
-Avg Review Score = AVERAGE(v_FactOrders[review_score])
+-- Order-grain measures
+Total Orders = DISTINCTCOUNT(v_FactOrderSummary[order_id])
+Order Product Revenue = SUM(v_FactOrderSummary[product_revenue])
+Order Freight Revenue = SUM(v_FactOrderSummary[freight_revenue])
+Order Value Including Freight =
+    SUM(v_FactOrderSummary[order_total_including_freight])
+Average Order Value =
+    DIVIDE([Order Value Including Freight], [Total Orders])
+Total Payment Value = SUM(v_FactOrderSummary[payment_total])
+Unique Customers =
+    DISTINCTCOUNT(v_DimCustomer[customer_unique_id])
+Delivered Orders =
+    CALCULATE([Total Orders], v_FactOrderSummary[order_status] = "delivered")
+On-Time Deliveries =
+    CALCULATE(
+        COUNTROWS(v_FactOrderSummary),
+        v_FactOrderSummary[delivered_on_time] = 1
+    )
+Delivery Records With Outcome =
+    COUNTROWS(
+        FILTER(v_FactOrderSummary,
+            NOT ISBLANK(v_FactOrderSummary[delivered_on_time]))
+    )
+On-Time Delivery % =
+    DIVIDE([On-Time Deliveries], [Delivery Records With Outcome])
+Average Delivery Days =
+    AVERAGE(v_FactOrderSummary[delivery_days])
+Average Review Score =
+    AVERAGE(v_FactOrderSummary[average_review_score])
 
--- On-Time Delivery Rate (requires v_CalcDeliveryKPIs joined)
-On-Time Delivery % = DIVIDE(
-    COUNTROWS(FILTER(v_FactOrders, v_FactOrders[delivered_on_time] = 1)),
-    COUNTROWS(FILTER(v_FactOrders, v_FactOrders[delivered_on_time] <> BLANK()))
-)
-
--- Monthly Revenue (time-intelligence)
-Revenue MTD = TOTALMTD([Total Revenue], v_DimCalendar[date])
-Revenue QTD = TOTALQTD([Total Revenue], v_DimCalendar[date])
-Revenue YTD = TOTALYTD([Total Revenue], v_DimCalendar[date])
-
--- Revenue vs Previous Period
-Revenue Prev Month = CALCULATE([Total Revenue], PREVIOUSMONTH(v_DimCalendar[date]))
-Revenue MoM % = DIVIDE([Total Revenue] - [Revenue Prev Month], [Revenue Prev Month])
-
--- Payment method breakdown
-Credit Card Revenue = CALCULATE([Total Revenue], v_FactOrders[payment_type] = "credit_card")
-Boleto Revenue     = CALCULATE([Total Revenue], v_FactOrders[payment_type] = "boleto")
-Debit Card Revenue = CALCULATE([Total Revenue], v_FactOrders[payment_type] = "debit_card")
-Voucher Revenue    = CALCULATE([Total Revenue], v_FactOrders[payment_type] = "voucher")
-
--- Delivery performance
-Avg Delivery Days = AVERAGE(v_CalcDeliveryKPIs[delivery_days])
+-- Date intelligence; requires a properly related, marked date table
+Revenue MTD =
+    TOTALMTD([Order Value Including Freight], v_DimCalendar[date])
+Revenue QTD =
+    TOTALQTD([Order Value Including Freight], v_DimCalendar[date])
+Revenue YTD =
+    TOTALYTD([Order Value Including Freight], v_DimCalendar[date])
+Revenue Previous Month =
+    CALCULATE(
+        [Order Value Including Freight],
+        PREVIOUSMONTH(v_DimCalendar[date])
+    )
+Revenue MoM % =
+    DIVIDE(
+        [Order Value Including Freight] - [Revenue Previous Month],
+        [Revenue Previous Month]
+    )
 ```
 
----
+**Definitions:** Item revenue is the sum of product prices. Order value including freight is product price plus freight. Payment value is tracked separately and should not be assumed equal to item totals. The average review score above is the unweighted mean of order-level average review scores. `Total Orders` includes all order statuses; filter to delivered orders for a delivered-sales view. For a product/seller-filtered AOV, build a separate item-based measure with an explicitly documented definition.
 
-## 4. Suggested Dashboard Layout
+## 4. Proposed dashboard pages
 
-### Page 1 — Executive Summary
+1. **Sales overview:** order count, order value including freight, AOV, monthly trend and customer locations
+2. **Products and sellers:** item-level product revenue, units, category and seller contribution
+3. **Customers and reviews:** unique customer counts, order-level review scores and geographic distribution
+4. **Delivery:** delivered orders, on-time percentage, average delivery days and late deliveries
 
-| Visual | Data |
-|---|---|
-| **KPI Cards** (top row) | Total Revenue, Total Orders, Avg Order Value, Avg Review Score, On-Time Delivery % |
-| **Line Chart** | Revenue & Orders over time (year-month on X-axis, dual axis) |
-| **Treemap** | Revenue by Product Category |
-| **Map** | Orders by Customer State |
-| **Table** | Top 10 Products by Revenue |
+Do not label these pages as built or published until they exist in a Power BI file.
 
-### Page 2 — Sales & Products
+## 5. Validate before using figures on your CV
 
-| Visual | Data |
-|---|---|
-| **Bar Chart** | Revenue by Product Category |
-| **Scatter Plot** | Product Weight vs. Freight Cost (colored by category) |
-| **Matrix** | Product Category × Month with Revenue |
-| **Gauge** | Revenue vs Target (can set a goal) |
-| **Slicers** | Year, Quarter, Product Category |
+Run the checks below against the full source dataset:
 
-### Page 3 — Customers & Reviews
+```sql
+-- One row per order in the order summary
+SELECT COUNT(*) AS rows, COUNT(DISTINCT order_id) AS orders
+FROM v_FactOrderSummary;
 
-| Visual | Data |
-|---|---|
-| **KPI Cards** | Total Customers, Avg Review Score, repeat customers |
-| **Bar Chart** | Review Score Distribution (1-5) |
-| **Stacked Bar** | Orders by Customer State |
-| **Donut** | Payment Type breakdown |
-| **Table** | Customers by City with Order Count & Revenue |
+-- One row per order item in the item fact
+SELECT COUNT(*) AS item_rows FROM v_FactOrders;
+SELECT COUNT(*) AS source_item_rows FROM olist_order_items_dataset;
 
-### Page 4 — Delivery & Operations
+-- Source versus reporting revenue, without order/payment duplication
+SELECT SUM(price) AS source_product_revenue FROM olist_order_items_dataset;
+SELECT SUM(price) AS view_product_revenue FROM v_FactOrders;
 
-| Visual | Data |
-|---|---|
-| **KPI Cards** | Avg Delivery Days, On-Time %, Late Orders |
-| **Line Chart** | Delivery Days over time |
-| **Histogram** | Distribution of Delivery Days (bucketed) |
-| **Bar Chart** | Avg Freight by Seller State |
-| **Slicers** | Year, Month, Seller State |
+-- Payment totals are independent of item count
+SELECT SUM(payment_value) AS source_payment_total FROM olist_order_payments_dataset;
+SELECT SUM(payment_total) AS view_payment_total FROM v_FactOrderSummary;
 
----
+-- Check for unexpected duplicate dimension keys
+SELECT product_id, COUNT(*) AS n FROM v_DimProduct GROUP BY product_id HAVING COUNT(*) > 1;
+```
 
-## 5. Filters & Slicers (Global)
+These queries should agree where indicated. If not, investigate the source data and joins before publishing any totals.
 
-Add these to a **slicer pane** or top banner across all pages:
+## 6. Experiment work remains separate
 
-- Year / Quarter (from `v_DimCalendar`)
-- Product Category (from `v_DimProduct`)
-- Customer State (from `v_DimCustomer`)
-- Payment Type (from `v_FactOrders`)
-- Order Status (from `v_FactOrders`)
-
----
-
-## 6. Color Palette (Recommended)
-
-Use a consistent musical-instrument theme:
-
-- Primary: `#1E3A5F` (deep blue)
-- Secondary: `#F5A623` (amber/gold)
-- Accent: `#7ED321` (green for positive metrics)
-- Alert: `#D0021B` (red for issues)
-- Background: `#F8F9FA` (light grey)
-
----
-
-## 7. Publishing
-
-1. **File** → **Publish** → **Publish to Power BI Service**
-2. Select a workspace
-3. Set up scheduled refresh using the **On-premises data gateway** (SQLite ODBC driver must be installed on the gateway machine)
+The `ab_testing/` analysis uses a different public experiment dataset; it is not a live checkout experiment on Olist orders. `experiment_design.md` is a proposed checkout-message test. Neither should be presented as a production A/B test run for this retailer.
