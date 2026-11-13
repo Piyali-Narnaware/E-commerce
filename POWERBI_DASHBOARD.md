@@ -60,7 +60,13 @@ Average Order Value =
     DIVIDE([Order Value Including Freight], [Total Orders])
 Total Payment Value = SUM(v_FactOrderSummary[payment_total])
 Unique Customers =
-    DISTINCTCOUNT(v_DimCustomer[customer_unique_id])
+    CALCULATE(
+        DISTINCTCOUNT(v_DimCustomer[customer_unique_id]),
+        TREATAS(
+            VALUES(v_FactOrderSummary[customer_id]),
+            v_DimCustomer[customer_id]
+        )
+    )
 Delivered Orders =
     CALCULATE([Total Orders], v_FactOrderSummary[order_status] = "delivered")
 On-Time Deliveries =
