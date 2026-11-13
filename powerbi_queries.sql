@@ -59,8 +59,7 @@ SELECT
     ROUND(p.product_weight_g / 1000.0, 3) AS product_weight_kg,
     ROUND(p.product_length_cm * p.product_height_cm * p.product_width_cm / 1000.0, 2) AS product_volume_cm3
 FROM olist_products_dataset p
-LEFT JOIN product_category_name_translation t ON p.product_category_name = t.product_category_name_english
-                                              OR p.product_category_name = t.product_category_name;
+LEFT JOIN product_category_name_translation t ON p.product_category_name = t.product_category_name;
 
 
 -- 4. DimSeller
@@ -103,7 +102,7 @@ SELECT
     CAST(strftime('%j', d) AS INTEGER)                  AS day_of_year,
     CAST(strftime('%W', d) AS INTEGER)                  AS week_no,
     CASE WHEN CAST(strftime('%w', d) AS INTEGER) IN (0, 6) THEN 0 ELSE 1 END AS is_weekday,
-    strftime('%Q', d)                                   AS quarter
+    CAST((CAST(strftime('%m', d) AS INTEGER) + 2) / 3 AS INTEGER) AS quarter
 FROM dates;
 
 
