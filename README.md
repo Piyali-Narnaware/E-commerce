@@ -1,8 +1,8 @@
 # E-commerce Reporting | SQLite, SQL & Data Quality
 
-**Question:** How can raw marketplace tables be turned into reliable, reusable reporting datasets?
+**Aim:** How can raw marketplace tables be turned into reliable, reusable reporting datasets?
 
-This project uses the [Olist Brazilian e-commerce dataset](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce) to examine orders, payments, products, customers and delivery performance. The emphasis is on SQL modelling, reconciliation and making metrics usable for reporting.
+This project uses the [Olist Brazilian e-commerce dataset](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce) to examine orders, payments, products, customers and delivery performance. I focused on getting the reporting tables and totals right before moving on to dashboard design.
 
 ## Work completed
 
@@ -11,7 +11,7 @@ This project uses the [Olist Brazilian e-commerce dataset](https://www.kaggle.co
 - Added [automated SQL checks](validate_sql.py) covering row counts, uniqueness and reconciliation of payment and product-revenue totals
 - Documented proposed Power BI measures and pages in [`POWERBI_DASHBOARD.md`](POWERBI_DASHBOARD.md)
 
-**Validation:** The automated reporting-view checks passed against the Olist CSVs loaded into SQLite. That establishes consistency for the checked queries; it does not validate every possible business metric.
+**Validation:** The automated reporting-view checks passed against the Olist CSVs loaded into SQLite. The checks cover the queries listed above, not every possible metric.
 
 ## Reporting questions
 
