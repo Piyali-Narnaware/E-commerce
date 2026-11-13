@@ -1,0 +1,15 @@
+name: Validate e-commerce SQL views
+on:
+  push:
+    paths:
+      - 'powerbi_queries.sql'
+      - 'validate_sql.py'
+      - '.github/workflows/validate-sql.yml'
+  workflow_dispatch:
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check SQLite reporting views
+        run: python validate_sql.py
